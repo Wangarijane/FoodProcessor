@@ -1,0 +1,115 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = your_jwt_access_token_here
+
+# Optional convenience IDs (update after creating records)
+@produceId = 1
+@orderId = 1
+
+###
+# Register Farmer
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+  "email": "farmer1@example.com",
+  "password": "FarmerPass123!",
+  "phone_number": "+254700000001",
+  "role": "FARMER",
+  "location_name": "Nakuru"
+}
+
+###
+# Register Retailer
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+  "email": "retailer1@example.com",
+  "password": "RetailPass123!",
+  "phone_number": "+254700000002",
+  "role": "RETAILER",
+  "location_name": "Nairobi"
+}
+
+###
+# Register Hub
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+  "email": "hub1@example.com",
+  "password": "HubPass123!",
+  "phone_number": "+254700000003",
+  "role": "HUB",
+  "location_name": "Eldoret"
+}
+
+###
+# Login (replace with whichever user you want to test)
+POST {{baseUrl}}/auth/login/
+Content-Type: application/json
+
+{
+  "email": "farmer1@example.com",
+  "password": "FarmerPass123!"
+}
+
+###
+# List Produce (Protected)
+GET {{baseUrl}}/produce/
+Authorization: Bearer {{token}}
+
+###
+# Create Produce (Protected - FARMER token required)
+POST {{baseUrl}}/produce/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "crop_type": "Maize",
+  "quantity_kg": "1500.00",
+  "suggested_price": "42.50"
+}
+
+###
+# List Orders (Protected - role-filtered by backend)
+GET {{baseUrl}}/orders/
+Authorization: Bearer {{token}}
+
+###
+# Place Order (Protected - RETAILER token required)
+POST {{baseUrl}}/orders/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "produce_id": {{produceId}},
+  "quantity": "300.00",
+  "total_price": "12750.00"
+}
+
+###
+# Update Order Status (Protected - HUB token required)
+PATCH {{baseUrl}}/orders/{{orderId}}/status/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "Processing"
+}
+
+###
+# Mark Order Completed (Protected - HUB token required)
+PATCH {{baseUrl}}/orders/{{orderId}}/status/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "Completed"
+}
+
+###
+# View Farmer Earnings (Protected - FARMER token required)
+GET {{baseUrl}}/farmer/earnings/
+Authorization: Bearer {{token}}
+
