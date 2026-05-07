@@ -70,3 +70,7 @@ dmypy.json
 # OS files
 .DS_Store
 Thumbs.db
+
+
+# API tests
+api_tests.http

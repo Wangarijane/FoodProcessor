@@ -46,6 +46,15 @@ class User(AbstractUser):
         return f"{self.email} ({self.role})"
 
 
+class OTPVerification(models.Model):
+    phone_number = models.CharField(max_length=20)
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.phone_number} - {self.otp_code}"
+
+
 class ProduceListing(models.Model):
     farmer = models.ForeignKey(
         User,

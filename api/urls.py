@@ -2,7 +2,14 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import FarmerEarningsView, OrderViewSet, ProduceListingViewSet, RegistrationView
+from .views import (
+    FarmerEarningsView,
+    OrderViewSet,
+    ProduceListingViewSet,
+    RegistrationView,
+    SendOTPView,
+    VerifyOTPView,
+)
 
 router = DefaultRouter()
 router.register("produce", ProduceListingViewSet, basename="produce")
@@ -13,5 +20,7 @@ urlpatterns = [
     path("auth/register/", RegistrationView.as_view(), name="register"),
     path("auth/login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/send-otp/", SendOTPView.as_view(), name="send-otp"),
+    path("auth/verify-otp/", VerifyOTPView.as_view(), name="verify-otp"),
     path("farmer/earnings/", FarmerEarningsView.as_view(), name="farmer-earnings"),
 ]

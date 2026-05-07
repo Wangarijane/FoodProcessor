@@ -1,4 +1,5 @@
 from decimal import Decimal
+from random import randint
 
 from django.db.models import Sum
 from rest_framework import mixins, status, viewsets
@@ -6,8 +7,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Order, ProduceListing, User
+from .models import OTPVerification, Order, ProduceListing, User
 from .serializers import (
     OrderSerializer,
     ProduceListingSerializer,
@@ -25,6 +27,65 @@ class RegistrationView(APIView):
         return Response(
             UserRegistrationSerializer(user).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class SendOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        phone_number = request.data.get("phone_number")
+        if not phone_number:
+            return Response(
+                {"detail": "phone_number is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        otp_code = f"{randint(0, 999999):06d}"
+        OTPVerification.objects.create(phone_number=phone_number, otp_code=otp_code)
+        print(f"Mock OTP for {phone_number}: {otp_code}")
+        return Response(
+            {"detail": "OTP sent successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        phone_number = request.data.get("phone_number")
+        otp = request.data.get("otp")
+
+        if not phone_number or not otp:
+            return Response(
+                {"detail": "phone_number and otp are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        otp_record = (
+            OTPVerification.objects.filter(phone_number=phone_number, otp_code=otp)
+            .order_by("-created_at")
+            .first()
+        )
+        if otp_record is None:
+            return Response(
+                {"detail": "Invalid OTP."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = User.objects.filter(phone_number=phone_number).first()
+        if user is None:
+            return Response({"is_new_user": True}, status=status.HTTP_200_OK)
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "is_new_user": False,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            },
+            status=status.HTTP_200_OK,
         )
 
 
